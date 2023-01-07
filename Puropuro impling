@@ -1,0 +1,53 @@
+import com.runescape.Game
+import com.runescape.NPC
+import com.runescape.Player
+import com.runescape.collision.Region
+import com.runescape.game.object.Object
+
+fun main(args: Array<String>) {
+    // Find a location with dragon, ninja, and magpie implings
+    val region = Region(3200, 3200)
+    val implings = region.getNpcs().filter { it.id == 6059 || it.id == 6060 || it.id == 6061 }
+
+    if (implings.isEmpty()) {
+        println("There are no implings in this region.")
+        return
+    }
+
+    val player = Game.getPlayer()
+
+    // Check the player's inventory for jars
+    val jars = player.getInventory().getItems().filter { it.id == 11260 }
+
+    if (jars.isEmpty()) {
+        // Go to the bank in Zanaris, deposit any caught implings, and withdraw more jars
+        val bank = Object(11758)
+        player.turnTo(bank)
+        bank.interact(0)
+
+        // Wait for the bank screen to open
+        Thread.sleep(3000)
+
+        // Deposit any caught implings
+        player.getBank().depositAll(6059)
+        player.getBank().depositAll(6060)
+        player.getBank().depositAll(6061)
+
+        // Withdraw jars
+        player.getBank().withdraw(11260, 27)
+
+        // Close the bank screen
+        player.getBank().close()
+    }
+
+    // Use the "entangle" spell on the impling
+    player.setCastSpell(12425)
+    player.setAutocastSpell(12425)
+
+    for (impling in implings) {
+        // Catch the impling in a jar
+        player.turnTo(impling)
+        player.interact(impling, 0)
+        Thread.sleep(1000)
+    }
+}
